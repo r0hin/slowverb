@@ -14,3 +14,5 @@
 - validate the full pipeline at sub-minute scale before scaling; change only the scale parameter.
 - define boundaries and invariants before implementing complex features.
 - immediately persist new user constraints in this file and acknowledge them.
+- keep the readme short and visually simple, and keep the repository description concise.
+- keep the public project in the user's github folder under r0hin/slowverb.
