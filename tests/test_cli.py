@@ -125,8 +125,8 @@ class AudioTests(unittest.TestCase):
         samples = self.decode(output)
         body = samples[44100:88200]
         crossings = sum(a < 0 <= b for a, b in zip(body, body[1:]))
-        self.assertAlmostEqual(crossings, 352, delta=2)
-        self.assertAlmostEqual(len(samples) / 44100, 5.5, delta=0.1)
+        self.assertAlmostEqual(crossings, 374, delta=2)
+        self.assertAlmostEqual(len(samples) / 44100, 5.35, delta=0.1)
         tail = samples[132300:176400]
         self.assertGreater(math.sqrt(sum(x * x for x in tail) / len(tail)), 0.00001)
         self.assertLess(max(abs(x) for x in samples), 1.0)

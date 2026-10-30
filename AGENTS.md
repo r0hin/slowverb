@@ -16,3 +16,4 @@
 - immediately persist new user constraints in this file and acknowledge them.
 - keep the readme short and visually simple, and keep the repository description concise.
 - keep the public project in the user's github folder under r0hin/slowverb.
+- default to 0.85 speed unless the user overrides it with --speed.

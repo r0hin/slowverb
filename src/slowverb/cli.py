@@ -163,8 +163,8 @@ def main(argv=None):
     parser.add_argument(
         "--speed",
         type=number_between(0.5, 1.0),
-        default=0.8,
-        help="speed and pitch multiplier (default: 0.8)",
+        default=0.85,
+        help="speed and pitch multiplier (default: 0.85)",
     )
     parser.add_argument(
         "--reverb",

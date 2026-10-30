@@ -12,7 +12,7 @@
 slowverb "https://youtu.be/VIDEO_ID"
 ```
 
-0.8× speed · stereo convolution reverb · 320 kbps MP3
+0.85× speed · stereo convolution reverb · 320 kbps MP3
 
 </div>
 
@@ -41,7 +41,7 @@ slowverb "https://youtu.be/VIDEO_ID" --speed 0.85 --reverb 0.4 -o night.mp3
 
 | Option | Default | |
 | :--- | :--- | :--- |
-| `--speed` | `0.8` | Speed and pitch, `0.5`–`1.0` |
+| `--speed` | `0.85` | Speed and pitch, `0.5`–`1.0` |
 | `--reverb` | `0.3` | Reverb mix, `0`–`1` |
 | `-o, --output` | Video title | Output `.mp3` path |
 
