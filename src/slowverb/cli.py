@@ -50,6 +50,14 @@ def run(args):
     subprocess.run(args, check=True, stdout=sys.stderr)
 
 
+def open_file(path):
+    if sys.platform == "win32":
+        os.startfile(str(path))
+    else:
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        run([opener, str(path)])
+
+
 def safe_title(title):
     title = re.sub(r'[\x00-\x1f/\\:*?"<>|]', "_", title).strip(" .")
     return title.encode("utf-8")[:160].decode("utf-8", errors="ignore").rstrip(" .") or "audio"
@@ -158,6 +166,9 @@ def main(argv=None):
     parser.add_argument("--version", action="version", version=f"slowverb {__version__}")
     parser.add_argument("url", help="YouTube video URL (quote it)")
     parser.add_argument(
+        "--open", action="store_true", help="open the finished MP3 in your default audio app"
+    )
+    parser.add_argument(
         "-o", "--output", type=Path, help="output MP3 path; defaults to the video title"
     )
     parser.add_argument(
@@ -225,6 +236,12 @@ def main(argv=None):
                 render(source, encoded, args.speed, args.reverb, temp, ffmpeg, title)
                 os.link(encoded, output)
             print(str(output), flush=True)
+        if args.open:
+            try:
+                open_file(output)
+            except (OSError, subprocess.CalledProcessError) as error:
+                print(f"slowverb: MP3 saved, but could not open it: {error}", file=sys.stderr)
+                return 1
         return 0
     except subprocess.CalledProcessError as error:
         tool = "yt-dlp" if "yt_dlp" in error.cmd else "FFmpeg"

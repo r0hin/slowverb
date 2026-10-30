@@ -36,6 +36,7 @@ Prefer pipx? `pipx install git+https://github.com/r0hin/slowverb` works too.
 
 ```sh
 slowverb "https://youtu.be/VIDEO_ID"
+slowverb "https://youtu.be/VIDEO_ID" --open
 slowverb "https://youtu.be/VIDEO_ID" --speed 0.85 --reverb 0.4 -o night.mp3
 ```
 
@@ -44,6 +45,7 @@ slowverb "https://youtu.be/VIDEO_ID" --speed 0.85 --reverb 0.4 -o night.mp3
 | `--speed` | `0.85` | Speed and pitch, `0.5`–`1.0` |
 | `--reverb` | `0.3` | Reverb mix, `0`–`1` |
 | `-o, --output` | Video title | Output `.mp3` path |
+| `--open` | Off | Open the finished MP3 in your default audio app |
 
 Saves to your current folder. One video per run, even with a playlist link.
 Existing files are never overwritten. Progress goes to stderr; the saved path goes to stdout.

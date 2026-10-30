@@ -68,6 +68,18 @@ class CliTests(unittest.TestCase):
                 self.assertNotRegex(safe, r'[\x00-\x1f/\\:*?"<>|]')
                 self.assertLess(len(f"{safe} (slowed + reverb).mp3".encode()), 255)
 
+    def test_open_uses_the_platform_default_app(self):
+        path = Path("night track.mp3").absolute()
+        for platform, opener in (("darwin", "open"), ("linux", "xdg-open")):
+            with self.subTest(platform=platform), patch.object(cli.sys, "platform", platform):
+                with patch.object(cli.subprocess, "run") as run:
+                    cli.open_file(path)
+                    run.assert_called_once_with([opener, str(path)], check=True, stdout=sys.stderr)
+        with patch.object(cli.sys, "platform", "win32"):
+            with patch.object(cli.os, "startfile", create=True) as startfile:
+                cli.open_file(path)
+                startfile.assert_called_once_with(str(path))
+
 
 @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"), "FFmpeg required")
 class AudioTests(unittest.TestCase):
@@ -119,7 +131,9 @@ class AudioTests(unittest.TestCase):
 
     def test_full_pipeline_pitch_tail_encoding_and_stdout(self):
         output = self.temp / "slow night.mp3"
-        result, stdout = self.invoke([URL, "-o", str(output)])
+        with patch.object(cli, "open_file") as open_file:
+            result, stdout = self.invoke([URL, "-o", str(output)])
+            open_file.assert_not_called()
         self.assertEqual(result, 0)
         self.assertEqual(stdout, f"{output}\n")
         samples = self.decode(output)
@@ -158,6 +172,27 @@ class AudioTests(unittest.TestCase):
         samples = self.decode(output)
         self.assertAlmostEqual(len(samples) / 44100, 2.0, delta=0.1)
 
+    def test_open_runs_only_after_the_finished_mp3_is_saved(self):
+        output = self.temp / "open night.mp3"
+        opened = []
+        with patch.object(
+            cli, "open_file", side_effect=lambda path: opened.append(path.read_bytes())
+        ):
+            result, stdout = self.invoke([URL, "--open", "-o", str(output)])
+        self.assertEqual(result, 0)
+        self.assertEqual(stdout, f"{output}\n")
+        self.assertEqual(opened, [output.read_bytes()])
+        self.assertTrue(opened[0])
+
+    def test_failed_open_preserves_mp3_and_reports_saved_path(self):
+        output = self.temp / "saved night.mp3"
+        with patch.object(cli, "open_file", side_effect=FileNotFoundError("no audio app")):
+            result, stdout = self.invoke([URL, "--open", "-o", str(output)])
+        self.assertEqual(result, 1)
+        self.assertEqual(stdout, f"{output}\n")
+        self.assertTrue(output.is_file())
+        self.assertIn("MP3 saved, but could not open it", (self.temp / "stderr.txt").read_text())
+
     def test_default_name_and_existing_file_protection(self):
         with chdir(self.temp):
             result, stdout = self.invoke([URL])
@@ -178,7 +213,9 @@ class AudioTests(unittest.TestCase):
             raise subprocess.CalledProcessError(1, ["ffmpeg"])
 
         with patch.object(cli, "render", side_effect=fail):
-            result, stdout = self.invoke([URL, "-o", str(output)])
+            with patch.object(cli, "open_file") as open_file:
+                result, stdout = self.invoke([URL, "--open", "-o", str(output)])
+                open_file.assert_not_called()
         self.assertEqual(result, 1)
         self.assertEqual(stdout, "")
         self.assertFalse(output.exists())
